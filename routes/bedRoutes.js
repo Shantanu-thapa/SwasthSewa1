@@ -13,10 +13,10 @@ const protect = require("../middleware/jwtmiddleware");
 const router = express.Router();
 
 // Create a bed
-router.post("/", protect, createBed);
+router.post("/bed", protect, createBed);
 
 // Get all beds
-router.get("/", protect, getAllBeds);
+router.get("/bed", protect, getAllBeds);
 
 // Get bed by ID
 router.get("/:id", protect, getBedById);
