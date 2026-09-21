@@ -23,7 +23,7 @@ app.use("/api/v1", Auth);
 app.use("/api/v1/Hospital", HospitalList);
 app.use("/api/v1", Booking);
 app.use("/api/v1", Bed);
-app.use("/api/v1", Dashboard);
+app.use("/api/v1/patient", Dashboard);
 
 
 // Start application
