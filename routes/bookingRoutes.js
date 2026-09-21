@@ -12,10 +12,10 @@ const {
 const router = express.Router();
 
 // CREATE BOOKING
-router.post("/",protect , createBooking);
+router.post("/BOOK",protect , createBooking);
 
 // GET ALL BOOKINGS
-router.get("/", protect ,  getAllBookings);
+router.get("/BOOK", protect ,  getAllBookings);
 
 // GET SINGLE BOOKING
 router.get("/:id", protect,  getBookingById);
