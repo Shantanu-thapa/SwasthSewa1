@@ -20,9 +20,9 @@ const Bed = require("./routes/bedRoutes");
 const Dashboard = require("./routes/dashboardRoutes");
 
 app.use("/api/v1", Auth);
-app.use("/api/v1/Hospital", HospitalList);
-app.use("/api/v1/Book", Booking);
-app.use("/api/v1/Bed", Bed);
+app.use("/api/v1", HospitalList);
+app.use("/api/v1", Booking);
+app.use("/api/v1", Bed);
 app.use("/api/v1", Dashboard);
 
 
