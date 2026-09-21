@@ -21,9 +21,9 @@ router.get("/BOOK", protect ,  getAllBookings);
 router.get("/:id", protect,  getBookingById);
 
 // UPDATE BOOKING
-router.put("/:id", protect ,  updateBooking);
+router.put("/Book/:id", protect ,  updateBooking);
 
 // DELETE BOOKING
-router.delete("/:id", protect ,  deleteBooking);
+router.delete("/Book/:id", protect ,  deleteBooking);
 
 module.exports = router;
