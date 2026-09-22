@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
   BrowserRouter,
@@ -36,18 +36,34 @@ import {
 
 import "./App.css";
 
+/* =========================================================
+   API CONFIGURATION
+========================================================= */
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:5000/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-const getToken = () => localStorage.getItem("token");
+/* =========================================================
+   AUTH HELPERS
+========================================================= */
 
-const authHeaders = () => ({
-  Authorization: `Bearer ${getToken()}`,
-});
+const getToken = () => {
+  return localStorage.getItem("token");
+};
+
+const authHeaders = () => {
+  const token = getToken();
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 const getStoredUser = () => {
   try {
@@ -66,13 +82,21 @@ const logoutUser = () => {
   localStorage.removeItem("patient");
 };
 
+/* =========================================================
+   PROTECTED ROUTE
+========================================================= */
+
 function ProtectedRoute({ children }) {
-  return getToken() ? children : <Navigate to="/login" replace />;
+  return getToken() ? (
+    children
+  ) : (
+    <Navigate to="/login" replace />
+  );
 }
 
-/* =========================
+/* =========================================================
    NAVBAR
-========================= */
+========================================================= */
 
 function Navbar() {
   const navigate = useNavigate();
@@ -88,14 +112,20 @@ function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar-inner">
-        <Link to="/" className="brand" onClick={() => setOpen(false)}>
+        <Link
+          to="/"
+          className="brand"
+          onClick={() => setOpen(false)}
+        >
           <span className="brand-mark">
             <HeartPulse size={21} strokeWidth={2.3} />
           </span>
 
           <span className="brand-copy">
             <span className="brand-name">SwasthSewa</span>
-            <span className="brand-tagline">Healthcare, simplified.</span>
+            <span className="brand-tagline">
+              Healthcare, simplified.
+            </span>
           </span>
         </Link>
 
@@ -107,12 +137,17 @@ function Navbar() {
           {open ? <X size={23} /> : <Menu size={23} />}
         </button>
 
-        <nav className={`nav-links ${open ? "nav-open" : ""}`}>
+        <nav
+          className={`nav-links ${open ? "nav-open" : ""}`}
+        >
           <Link to="/" onClick={() => setOpen(false)}>
             Home
           </Link>
 
-          <Link to="/hospitals" onClick={() => setOpen(false)}>
+          <Link
+            to="/hospitals"
+            onClick={() => setOpen(false)}
+          >
             Hospitals
           </Link>
 
@@ -159,7 +194,10 @@ function Navbar() {
                 {user.name}
               </span>
 
-              <button className="nav-logout" onClick={logout}>
+              <button
+                className="nav-logout"
+                onClick={logout}
+              >
                 <LogOut size={16} />
                 Logout
               </button>
@@ -171,9 +209,9 @@ function Navbar() {
   );
 }
 
-/* =========================
+/* =========================================================
    HOME
-========================= */
+========================================================= */
 
 function Home() {
   const navigate = useNavigate();
@@ -196,9 +234,9 @@ function Home() {
             </h1>
 
             <p>
-              SwasthSewa helps patients discover hospitals, check bed
-              availability and manage healthcare bookings from one simple
-              platform.
+              SwasthSewa helps patients discover hospitals,
+              check bed availability and manage healthcare
+              bookings from one simple platform.
             </p>
 
             <div className="hero-actions">
@@ -213,10 +251,16 @@ function Home() {
               <button
                 className="btn btn-secondary btn-large"
                 onClick={() =>
-                  navigate(getToken() ? "/patient/dashboard" : "/signup")
+                  navigate(
+                    getToken()
+                      ? "/patient/dashboard"
+                      : "/signup"
+                  )
                 }
               >
-                {getToken() ? "Open Dashboard" : "Create Account"}
+                {getToken()
+                  ? "Open Dashboard"
+                  : "Create Account"}
               </button>
             </div>
 
@@ -236,7 +280,10 @@ function Home() {
           <div className="hero-card">
             <div className="hero-card-top">
               <div>
-                <span className="small-label">CARE AVAILABILITY</span>
+                <span className="small-label">
+                  CARE AVAILABILITY
+                </span>
+
                 <h3>Find available beds</h3>
               </div>
 
@@ -250,579 +297,84 @@ function Home() {
               <span>Search hospitals by location</span>
             </div>
 
-            <div className="availability-preview">
-              <div className="preview-row">
-                <div className="preview-icon">
-                  <Hospital size={18} />
-                </div>
-
-                <div>
-                  <strong>Hospital availability</strong>
-                  <span>Check before you visit</span>
-                </div>
-
-                <ChevronRight size={17} />
+            <div className="hero-stat">
+              <div>
+                <strong>24/7</strong>
+                <span>Healthcare access</span>
               </div>
 
-              <div className="preview-row">
-                <div className="preview-icon">
-                  <CalendarCheck size={18} />
-                </div>
-
-                <div>
-                  <strong>Easy booking</strong>
-                  <span>Manage your booking online</span>
-                </div>
-
-                <ChevronRight size={17} />
+              <div>
+                <strong>Live</strong>
+                <span>Bed availability</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="stats-section">
-        <div className="container stats-grid">
-          <StatCard
-            icon={<Hospital size={21} />}
-            value="Hospitals"
-            label="Discover available healthcare facilities"
-          />
-
-          <StatCard
-            icon={<Bed size={21} />}
-            value="Bed Availability"
-            label="Check available beds before booking"
-          />
-
-          <StatCard
-            icon={<CalendarCheck size={21} />}
-            value="Simple Booking"
-            label="Reserve and manage your healthcare booking"
-          />
-
-          <StatCard
-            icon={<ShieldCheck size={21} />}
-            value="Secure Access"
-            label="Your account stays protected"
-          />
-        </div>
-      </section>
-
-      <section className="home-section">
+      <section className="section">
         <div className="container">
-          <div className="section-heading centered">
-            <span className="section-kicker">HOW IT WORKS</span>
-            <h2>Healthcare without the unnecessary complexity.</h2>
+          <div className="section-heading">
+            <span className="section-kicker">
+              SIMPLE HEALTHCARE
+            </span>
+
+            <h2>Everything you need in one place.</h2>
+
             <p>
-              Find a hospital, choose an available bed and manage your
-              booking through your patient dashboard.
+              Find hospitals, check availability and manage
+              your bookings without unnecessary complexity.
             </p>
           </div>
 
-          <div className="steps-grid">
-            <StepCard
-              number="01"
-              icon={<Search size={22} />}
-              title="Find a hospital"
-              text="Browse hospitals and search by location."
-            />
-
-            <StepCard
-              number="02"
-              icon={<Bed size={22} />}
-              title="Check availability"
-              text="View beds and identify available capacity."
-            />
-
-            <StepCard
-              number="03"
-              icon={<CalendarCheck size={22} />}
-              title="Book your bed"
-              text="Create your booking using your patient account."
-            />
-
-            <StepCard
-              number="04"
-              icon={<Activity size={22} />}
-              title="Manage your care"
-              text="View your active booking and booking history."
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="cta-section">
-        <div className="container cta-card">
-          <div>
-            <span className="section-kicker">GET STARTED</span>
-            <h2>Take the first step toward simpler healthcare.</h2>
-            <p>
-              Create your patient account and start exploring hospitals.
-            </p>
-          </div>
-
-          <button
-            className="btn btn-light btn-large"
-            onClick={() => navigate("/signup")}
-          >
-            Create Patient Account
-            <ArrowRight size={18} />
-          </button>
-        </div>
-      </section>
-    </main>
-  );
-}
-
-function StatCard({ icon, value, label }) {
-  return (
-    <div className="stat-card">
-      <div className="stat-icon">{icon}</div>
-      <div>
-        <strong>{value}</strong>
-        <span>{label}</span>
-      </div>
-    </div>
-  );
-}
-
-function StepCard({ number, icon, title, text }) {
-  return (
-    <div className="step-card">
-      <div className="step-top">
-        <span>{number}</span>
-        <div className="step-icon">{icon}</div>
-      </div>
-
-      <h3>{title}</h3>
-      <p>{text}</p>
-    </div>
-  );
-}
-
-/* =========================
-   HOSPITALS
-========================= */
-
-function Hospitals() {
-  const [hospitals, setHospitals] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    fetchHospitals();
-  }, []);
-
-  const fetchHospitals = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await API.get("/Hospital/list");
-
-      setHospitals(
-        Array.isArray(response.data)
-          ? response.data
-          : response.data.hospitals || []
-      );
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to load hospitals right now."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredHospitals = useMemo(() => {
-    const value = search.toLowerCase().trim();
-
-    if (!value) return hospitals;
-
-    return hospitals.filter((hospital) => {
-      return (
-        hospital.name?.toLowerCase().includes(value) ||
-        hospital.location?.toLowerCase().includes(value)
-      );
-    });
-  }, [hospitals, search]);
-
-  return (
-    <main className="page">
-      <div className="container">
-        <div className="page-header hospitals-header">
-          <div>
-            <span className="section-kicker">HEALTHCARE NETWORK</span>
-            <h1>Find a hospital</h1>
-            <p>
-              Explore hospitals and check bed availability before
-              booking.
-            </p>
-          </div>
-
-          <div className="search-box">
-            <Search size={19} />
-            <input
-              type="text"
-              placeholder="Search by hospital or location..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {loading && <LoadingState text="Loading hospitals..." />}
-
-        {!loading && error && (
-          <ErrorState message={error} onRetry={fetchHospitals} />
-        )}
-
-        {!loading && !error && filteredHospitals.length === 0 && (
-          <EmptyState
-            icon={<Hospital size={28} />}
-            title="No hospitals found"
-            text="Try searching for a different hospital or location."
-          />
-        )}
-
-        {!loading && !error && filteredHospitals.length > 0 && (
-          <div className="hospital-grid">
-            {filteredHospitals.map((hospital) => (
-              <HospitalCard
-                key={hospital._id}
-                hospital={hospital}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
-  );
-}
-
-function HospitalCard({ hospital }) {
-  return (
-    <Link
-      to={`/hospitals/${hospital._id}`}
-      className="hospital-card"
-    >
-      <div className="hospital-card-top">
-        <div className="hospital-logo">
-          <Hospital size={24} />
-        </div>
-
-        <span
-          className={`availability-pill ${
-            hospital.availableBeds > 0
-              ? "available"
-              : "unavailable"
-          }`}
-        >
-          {hospital.availableBeds > 0
-            ? "Beds available"
-            : "No beds available"}
-        </span>
-      </div>
-
-      <h3>{hospital.name}</h3>
-
-      <div className="hospital-location">
-        <MapPin size={16} />
-        <span>{hospital.location}</span>
-      </div>
-
-      <div className="hospital-meta">
-        <div>
-          <strong>{hospital.availableBeds ?? 0}</strong>
-          <span>Available</span>
-        </div>
-
-        <div>
-          <strong>{hospital.totalBeds ?? 0}</strong>
-          <span>Total beds</span>
-        </div>
-      </div>
-
-      <div className="hospital-card-footer">
-        View hospital
-        <ArrowRight size={17} />
-      </div>
-    </Link>
-  );
-}
-
-/* =========================
-   HOSPITAL DETAILS
-========================= */
-
-function HospitalDetails() {
-  const { hospitalId } = useParams();
-  const navigate = useNavigate();
-
-  const [hospital, setHospital] = useState(null);
-  const [beds, setBeds] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [bookingLoading, setBookingLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    loadHospital();
-    loadBeds();
-  }, []);
-
-  const loadHospital = async () => {
-    try {
-      const response = await API.get("/Hospital/list");
-
-      const list = Array.isArray(response.data)
-        ? response.data
-        : response.data.hospitals || [];
-
-      const selected = list.find(
-        (item) => item._id === hospitalId
-      );
-
-      if (!selected) {
-        setError("Hospital not found.");
-        return;
-      }
-
-      setHospital(selected);
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to load hospital details."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadBeds = async () => {
-    try {
-      const response = await API.get("/Bed", {
-        headers: authHeaders(),
-      });
-
-      const list = Array.isArray(response.data)
-        ? response.data
-        : response.data.beds || [];
-
-      setBeds(
-        list.filter((bed) => {
-          const hospitalRef =
-            typeof bed.hospital === "object"
-              ? bed.hospital?._id
-              : bed.hospital;
-
-          return hospitalRef === hospitalId;
-        })
-      );
-    } catch (err) {
-      console.error("Bed loading error:", err);
-    }
-  };
-
-  const bookBed = async (bed) => {
-    const user = getStoredUser();
-
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
-    try {
-      setBookingLoading(true);
-      setMessage("");
-      setError("");
-
-      await API.post(
-        "/Book",
-        {
-          patient: user.id,
-          hospital: hospitalId,
-          bed: bed._id,
-        },
-        {
-          headers: authHeaders(),
-        }
-      );
-
-      setMessage("Bed booked successfully.");
-
-      await loadBeds();
-      await loadHospital();
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Unable to create booking."
-      );
-    } finally {
-      setBookingLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <main className="page">
-        <div className="container">
-          <LoadingState text="Loading hospital..." />
-        </div>
-      </main>
-    );
-  }
-
-  if (error && !hospital) {
-    return (
-      <main className="page">
-        <div className="container">
-          <ErrorState message={error} />
-        </div>
-      </main>
-    );
-  }
-
-  const availableBeds = beds.filter(
-    (bed) => bed.status === "available"
-  );
-
-  return (
-    <main className="page">
-      <div className="container">
-        <button
-          className="back-button"
-          onClick={() => navigate("/hospitals")}
-        >
-          ← Back to hospitals
-        </button>
-
-        <section className="hospital-details-card">
-          <div className="hospital-details-main">
-            <div className="details-logo">
-              <Hospital size={34} />
-            </div>
-
-            <div>
-              <span className="section-kicker">HOSPITAL</span>
-              <h1>{hospital.name}</h1>
-
-              <div className="detail-location">
-                <MapPin size={17} />
-                {hospital.location}
+          <div className="feature-grid">
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Hospital size={24} />
               </div>
 
-              {hospital.contactNumber && (
-                <div className="detail-location">
-                  <Phone size={17} />
-                  {hospital.contactNumber}
-                </div>
-              )}
+              <h3>Find hospitals</h3>
+
+              <p>
+                Discover available hospitals and their
+                healthcare facilities.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Bed size={24} />
+              </div>
+
+              <h3>Check beds</h3>
+
+              <p>
+                See available beds before making a booking.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon">
+                <CalendarCheck size={24} />
+              </div>
+
+              <h3>Manage bookings</h3>
+
+              <p>
+                Keep track of your hospital bookings from
+                your dashboard.
+              </p>
             </div>
           </div>
-
-          <div className="capacity-card">
-            <span>Available beds</span>
-            <strong>{hospital.availableBeds ?? 0}</strong>
-            <small>of {hospital.totalBeds ?? 0} total beds</small>
-          </div>
-        </section>
-
-        {message && (
-          <div className="success-alert">
-            <CheckCircle2 size={18} />
-            {message}
-          </div>
-        )}
-
-        {error && (
-          <div className="error-alert">
-            <Activity size={18} />
-            {error}
-          </div>
-        )}
-
-        <div className="section-heading details-heading">
-          <div>
-            <span className="section-kicker">BED AVAILABILITY</span>
-            <h2>Select an available bed</h2>
-          </div>
-
-          <span className="result-count">
-            {availableBeds.length} available
-          </span>
         </div>
-
-        {beds.length === 0 ? (
-          <EmptyState
-            icon={<Bed size={28} />}
-            title="No bed information available"
-            text="There are currently no beds listed for this hospital."
-          />
-        ) : availableBeds.length === 0 ? (
-          <EmptyState
-            icon={<Bed size={28} />}
-            title="No beds currently available"
-            text="Please check again later or explore another hospital."
-          />
-        ) : (
-          <div className="bed-grid">
-            {beds.map((bed) => (
-              <BedCard
-                key={bed._id}
-                bed={bed}
-                onBook={bookBed}
-                loading={bookingLoading}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      </section>
     </main>
   );
 }
 
-function BedCard({ bed, onBook, loading }) {
-  const available = bed.status === "available";
-
-  return (
-    <div className={`bed-card ${available ? "" : "occupied"}`}>
-      <div className="bed-card-icon">
-        <Bed size={23} />
-      </div>
-
-      <div className="bed-card-content">
-        <span className="small-label">BED</span>
-        <h3>{bed.bedNumber}</h3>
-
-        <span
-          className={`bed-status ${
-            available ? "available" : "occupied"
-          }`}
-        >
-          {available ? "Available" : "Occupied"}
-        </span>
-      </div>
-
-      {available && (
-        <button
-          className="btn btn-primary"
-          onClick={() => onBook(bed)}
-          disabled={loading}
-        >
-          {loading ? "Booking..." : "Book"}
-        </button>
-      )}
-    </div>
-  );
-}
-
-/* =========================
+/* =========================================================
    LOGIN
-========================= */
+========================================================= */
 
 function Login() {
   const navigate = useNavigate();
@@ -845,20 +397,38 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      setLoading(true);
-      setError("");
+    setLoading(true);
+    setError("");
 
+    try {
       const response = await API.post("/login", form);
 
-      localStorage.setItem("token", response.data.token);
-      saveUser(response.data.user);
+      const data = response.data;
+
+      const token = data.token;
+
+      if (!token) {
+        throw new Error("Token was not returned by server.");
+      }
+
+      localStorage.setItem("token", token);
+
+      const user =
+        data.patient ||
+        data.user ||
+        data.data ||
+        null;
+
+      if (user) {
+        saveUser(user);
+      }
 
       navigate("/patient/dashboard");
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Login failed. Please check your credentials."
+          err.message ||
+          "Unable to login."
       );
     } finally {
       setLoading(false);
@@ -867,90 +437,79 @@ function Login() {
 
   return (
     <main className="auth-page">
-      <div className="auth-container">
-        <div className="auth-intro">
-          <span className="section-kicker">PATIENT ACCESS</span>
-
-          <h1>Welcome back.</h1>
-
-          <p>
-            Sign in to manage your hospital bookings and access your
-            SwasthSewa dashboard.
-          </p>
-
-          <div className="auth-feature">
-            <CheckCircle2 size={18} />
-            Secure patient account
-          </div>
-
-          <div className="auth-feature">
-            <CheckCircle2 size={18} />
-            Manage active bookings
-          </div>
-
-          <div className="auth-feature">
-            <CheckCircle2 size={18} />
-            Access hospital availability
-          </div>
-        </div>
-
+      <div className="container auth-container">
         <div className="auth-card">
-          <div className="auth-card-heading">
+          <div className="auth-heading">
             <div className="auth-icon">
               <LogIn size={22} />
             </div>
 
-            <h2>Sign in</h2>
-            <p>Enter your account details below.</p>
+            <span className="section-kicker">
+              PATIENT LOGIN
+            </span>
+
+            <h1>Welcome back</h1>
+
+            <p>
+              Login to manage your healthcare bookings.
+            </p>
           </div>
 
           {error && (
-            <div className="error-alert">
-              <Activity size={17} />
+            <div className="form-error">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            <FormField
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-            />
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Email</label>
 
-            <FormField
-              label="Password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              value={form.password}
-              onChange={handleChange}
-            />
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
 
             <button
               className="btn btn-primary btn-full"
+              type="submit"
               disabled={loading}
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
-          <p className="auth-switch">
+          <div className="auth-footer">
             Don't have an account?{" "}
             <Link to="/signup">Create one</Link>
-          </p>
+          </div>
         </div>
       </div>
     </main>
   );
 }
 
-/* =========================
+/* =========================================================
    SIGNUP
-========================= */
+========================================================= */
 
 function Signup() {
   const navigate = useNavigate();
@@ -959,6 +518,7 @@ function Signup() {
     name: "",
     email: "",
     password: "",
+    phone: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -974,17 +534,17 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      setLoading(true);
-      setError("");
+    setLoading(true);
+    setError("");
 
+    try {
       await API.post("/signup", form);
 
       navigate("/login");
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Unable to create your account."
+          "Unable to create account."
       );
     } finally {
       setLoading(false);
@@ -993,299 +553,566 @@ function Signup() {
 
   return (
     <main className="auth-page">
-      <div className="auth-container">
-        <div className="auth-intro">
-          <span className="section-kicker">JOIN SWASTHSEWA</span>
-
-          <h1>Your healthcare journey starts here.</h1>
-
-          <p>
-            Create a patient account to discover hospitals, check
-            available beds and manage bookings.
-          </p>
-
-          <div className="auth-feature">
-            <CheckCircle2 size={18} />
-            Discover hospitals
-          </div>
-
-          <div className="auth-feature">
-            <CheckCircle2 size={18} />
-            Check bed availability
-          </div>
-
-          <div className="auth-feature">
-            <CheckCircle2 size={18} />
-            Manage bookings
-          </div>
-        </div>
-
+      <div className="container auth-container">
         <div className="auth-card">
-          <div className="auth-card-heading">
+          <div className="auth-heading">
             <div className="auth-icon">
               <UserPlus size={22} />
             </div>
 
-            <h2>Create account</h2>
-            <p>Register as a patient to get started.</p>
+            <span className="section-kicker">
+              CREATE ACCOUNT
+            </span>
+
+            <h1>Get started</h1>
+
+            <p>
+              Create your patient account to book hospital
+              beds.
+            </p>
           </div>
 
           {error && (
-            <div className="error-alert">
-              <Activity size={17} />
+            <div className="form-error">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            <FormField
-              label="Full name"
-              name="name"
-              type="text"
-              placeholder="Your full name"
-              value={form.name}
-              onChange={handleChange}
-            />
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Name</label>
 
-            <FormField
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-            />
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                required
+              />
+            </div>
 
-            <FormField
-              label="Password"
-              name="password"
-              type="password"
-              placeholder="Create a password"
-              value={form.password}
-              onChange={handleChange}
-            />
+            <div className="form-group">
+              <label>Email</label>
+
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Your email"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Phone</label>
+
+              <input
+                type="tel"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="Your phone number"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Create a password"
+                required
+              />
+            </div>
 
             <button
               className="btn btn-primary btn-full"
+              type="submit"
               disabled={loading}
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading
+                ? "Creating account..."
+                : "Create Account"}
             </button>
           </form>
 
-          <p className="auth-switch">
+          <div className="auth-footer">
             Already have an account?{" "}
-            <Link to="/login">Sign in</Link>
-          </p>
+            <Link to="/login">Login</Link>
+          </div>
         </div>
       </div>
     </main>
   );
 }
 
-function FormField({
-  label,
-  name,
-  type,
-  placeholder,
-  value,
-  onChange,
-}) {
-  return (
-    <label className="form-field">
-      <span>{label}</span>
+/* =========================================================
+   HOSPITALS
+========================================================= */
 
-      <input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required
-      />
-    </label>
-  );
-}
-
-/* =========================
-   PATIENT DASHBOARD
-========================= */
-
-function PatientDashboard() {
-  const navigate = useNavigate();
-
-  const [dashboard, setDashboard] = useState(null);
+function Hospitals() {
+  const [hospitals, setHospitals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
-
-  const loadDashboard = async () => {
+  const loadHospitals = async () => {
     try {
       setLoading(true);
+      setError("");
 
-      const response = await API.get("/dashboard", {
-        headers: authHeaders(),
-      });
+      /*
+        CURRENT BACKEND:
+        GET /api/v1/Hospital/list
+      */
 
-      setDashboard(response.data);
+      const response = await API.get("/Hospital/list");
+
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data.hospitals || [];
+
+      setHospitals(data);
     } catch (err) {
-      if (err.response?.status === 404) {
-        setDashboard(null);
-      } else {
-        setError(
-          err.response?.data?.message ||
-            "Unable to load dashboard."
-        );
-      }
+      setError(
+        err.response?.data?.message ||
+          "Unable to load hospitals."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const user = getStoredUser();
+  useEffect(() => {
+    loadHospitals();
+  }, []);
+
+  const filteredHospitals = hospitals.filter((hospital) => {
+    const value = search.toLowerCase();
+
+    return (
+      hospital.name?.toLowerCase().includes(value) ||
+      hospital.location?.toLowerCase().includes(value)
+    );
+  });
+
+  return (
+    <main className="page">
+      <div className="container">
+        <div className="page-header">
+          <div>
+            <span className="section-kicker">
+              HEALTHCARE NETWORK
+            </span>
+
+            <h1>Find a hospital</h1>
+
+            <p>
+              Explore hospitals and check available beds.
+            </p>
+          </div>
+        </div>
+
+        <div className="search-box">
+          <Search size={19} />
+
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by hospital or location..."
+          />
+        </div>
+
+        {loading && (
+          <LoadingState text="Loading hospitals..." />
+        )}
+
+        {!loading && error && (
+          <ErrorState
+            message={error}
+            onRetry={loadHospitals}
+          />
+        )}
+
+        {!loading &&
+          !error &&
+          filteredHospitals.length === 0 && (
+            <EmptyState
+              icon={<Hospital size={28} />}
+              title="No hospitals found"
+              text="Try another hospital or location."
+            />
+          )}
+
+        {!loading &&
+          !error &&
+          filteredHospitals.length > 0 && (
+            <div className="hospital-grid">
+              {filteredHospitals.map((hospital) => (
+                <HospitalCard
+                  key={hospital._id}
+                  hospital={hospital}
+                />
+              ))}
+            </div>
+          )}
+      </div>
+    </main>
+  );
+}
+
+/* =========================================================
+   HOSPITAL CARD
+========================================================= */
+
+function HospitalCard({ hospital }) {
+  return (
+    <Link
+      to={`/hospitals/${hospital._id}`}
+      className="hospital-card"
+    >
+      <div className="hospital-card-top">
+        <div className="hospital-card-icon">
+          <Hospital size={25} />
+        </div>
+
+        <ChevronRight size={19} />
+      </div>
+
+      <span className="section-kicker">HOSPITAL</span>
+
+      <h3>{hospital.name}</h3>
+
+      <div className="hospital-location">
+        <MapPin size={16} />
+
+        <span>
+          {hospital.location || "Location unavailable"}
+        </span>
+      </div>
+
+      <div className="hospital-card-footer">
+        <span>
+          <Bed size={16} />
+          {hospital.availableBeds ?? 0} beds available
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+/* =========================================================
+   HOSPITAL DETAILS
+========================================================= */
+
+function HospitalDetails() {
+  const { hospitalId } = useParams();
+  const navigate = useNavigate();
+
+  const [hospital, setHospital] = useState(null);
+  const [beds, setBeds] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [bookingLoading, setBookingLoading] =
+    useState(false);
+
+  const [error, setError] = useState("");
+  const [bookingMessage, setBookingMessage] =
+    useState("");
+
+  useEffect(() => {
+    loadHospitalDetails();
+  }, [hospitalId]);
+
+  const loadHospitalDetails = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      /*
+        CURRENT BACKEND DOES NOT HAVE:
+        GET /Hospital/:id
+
+        Therefore we use:
+        GET /Hospital/list
+
+        and find the hospital locally.
+      */
+
+      const hospitalResponse =
+        await API.get("/Hospital/list");
+
+      const hospitals = Array.isArray(
+        hospitalResponse.data
+      )
+        ? hospitalResponse.data
+        : hospitalResponse.data.hospitals || [];
+
+      const selectedHospital = hospitals.find(
+        (item) => item._id === hospitalId
+      );
+
+      if (!selectedHospital) {
+        throw new Error("Hospital not found.");
+      }
+
+      setHospital(selectedHospital);
+
+      /*
+        CURRENT BACKEND:
+        GET /api/v1/bed
+
+        It requires authentication.
+      */
+
+      const bedResponse = await API.get("/bed", {
+        headers: authHeaders(),
+      });
+
+      const allBeds = Array.isArray(bedResponse.data)
+        ? bedResponse.data
+        : bedResponse.data.beds || [];
+
+      /*
+        Filter beds belonging to this hospital.
+        Handles both populated and ObjectId forms.
+      */
+
+      const hospitalBeds = allBeds.filter((bed) => {
+        const bedHospital =
+          typeof bed.hospital === "object"
+            ? bed.hospital?._id
+            : bed.hospital;
+
+        return bedHospital === hospitalId;
+      });
+
+      setBeds(hospitalBeds);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Unable to load hospital details."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const bookBed = async (bed) => {
+    try {
+      setBookingLoading(true);
+      setBookingMessage("");
+
+      const user = getStoredUser();
+
+      if (!user?.id) {
+        navigate("/login");
+        return;
+      }
+
+      /*
+        CURRENT BACKEND:
+        POST /api/v1/BOOK
+      */
+
+      await API.post(
+        "/BOOK",
+        {
+          patient: user.id,
+          hospital: hospitalId,
+          bed: bed._id,
+        },
+        {
+          headers: authHeaders(),
+        }
+      );
+
+      setBookingMessage(
+        "Bed booked successfully."
+      );
+
+      await loadHospitalDetails();
+    } catch (err) {
+      setBookingMessage(
+        err.response?.data?.message ||
+          "Unable to book this bed."
+      );
+    } finally {
+      setBookingLoading(false);
+    }
+  };
 
   if (loading) {
     return (
       <main className="page">
         <div className="container">
-          <LoadingState text="Loading your dashboard..." />
+          <LoadingState text="Loading hospital..." />
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !hospital) {
+    return (
+      <main className="page">
+        <div className="container">
+          <ErrorState
+            message={error || "Hospital not found."}
+            onRetry={loadHospitalDetails}
+          />
         </div>
       </main>
     );
   }
 
   return (
-    <main className="page dashboard-page">
+    <main className="page">
       <div className="container">
-        <div className="dashboard-welcome">
-          <div>
-            <span className="section-kicker">PATIENT DASHBOARD</span>
+        <button
+          className="back-button"
+          onClick={() => navigate("/hospitals")}
+        >
+          ← Back to hospitals
+        </button>
 
-            <h1>
-              Good to see you,{" "}
-              <span>{user?.name?.split(" ")[0] || "there"}.</span>
-            </h1>
-
-            <p>
-              Manage your healthcare bookings and account from here.
-            </p>
+        <div className="hospital-details-header">
+          <div className="hospital-details-icon">
+            <Hospital size={34} />
           </div>
 
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate("/hospitals")}
-          >
-            Find a Hospital
-            <ArrowRight size={17} />
-          </button>
-        </div>
+          <div>
+            <span className="section-kicker">
+              HOSPITAL
+            </span>
 
-        {error && <ErrorState message={error} />}
-
-        {!error && dashboard && (
-          <>
-            <div className="dashboard-grid">
-              <div className="dashboard-main-card">
-                <div className="dashboard-card-header">
-                  <div>
-                    <span className="section-kicker">
-                      ACTIVE BOOKING
-                    </span>
-                    <h2>Your current booking</h2>
-                  </div>
-
-                  <span className="status-badge">
-                    <span />
-                    Active
-                  </span>
-                </div>
-
-                <div className="dashboard-booking">
-                  <div className="dashboard-hospital-icon">
-                    <Hospital size={28} />
-                  </div>
-
-                  <div className="dashboard-booking-info">
-                    <h3>{dashboard.hospital?.name}</h3>
-
-                    <div>
-                      <User size={16} />
-                      {dashboard.patient?.name}
-                    </div>
-
-                    <div>
-                      <Clock3 size={16} />
-                      Booking confirmed
-                    </div>
-                  </div>
-                </div>
-
-                <div className="dashboard-actions">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() =>
-                      navigate("/patient/bookings")
-                    }
-                  >
-                    View all bookings
-                  </button>
-
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => navigate("/hospitals")}
-                  >
-                    Find another hospital
-                  </button>
-                </div>
-              </div>
-
-              <div className="dashboard-side-card">
-                <div className="dashboard-side-icon">
-                  <User size={21} />
-                </div>
-
-                <span className="section-kicker">PATIENT PROFILE</span>
-
-                <h3>{dashboard.patient?.name}</h3>
-
-                <p>{dashboard.patient?.email}</p>
-
-                <div className="profile-divider" />
-
-                <div className="profile-item">
-                  <ShieldCheck size={17} />
-                  <span>Account protected</span>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {!error && !dashboard && (
-          <div className="no-booking-card">
-            <div className="empty-icon">
-              <CalendarCheck size={28} />
-            </div>
-
-            <span className="section-kicker">NO ACTIVE BOOKING</span>
-
-            <h2>You don't have an active booking.</h2>
+            <h1>{hospital.name}</h1>
 
             <p>
-              Explore hospitals and find an available bed when you
-              need one.
+              <MapPin size={17} />
+              {hospital.location}
             </p>
+          </div>
+        </div>
 
-            <button
-              className="btn btn-primary"
-              onClick={() => navigate("/hospitals")}
-            >
-              Explore Hospitals
-              <ArrowRight size={17} />
-            </button>
+        {bookingMessage && (
+          <div className="form-message">
+            {bookingMessage}
+          </div>
+        )}
+
+        <div className="hospital-info-grid">
+          <div className="info-card">
+            <Bed size={21} />
+
+            <span className="section-kicker">
+              TOTAL BEDS
+            </span>
+
+            <strong>
+              {hospital.totalBeds ?? beds.length}
+            </strong>
+          </div>
+
+          <div className="info-card">
+            <CheckCircle2 size={21} />
+
+            <span className="section-kicker">
+              AVAILABLE
+            </span>
+
+            <strong>
+              {hospital.availableBeds ?? 0}
+            </strong>
+          </div>
+
+          <div className="info-card">
+            <Phone size={21} />
+
+            <span className="section-kicker">
+              CONTACT
+            </span>
+
+            <strong>
+              {hospital.contact || "Not available"}
+            </strong>
+          </div>
+        </div>
+
+        <div className="section-heading">
+          <span className="section-kicker">
+            BED AVAILABILITY
+          </span>
+
+          <h2>Available beds</h2>
+
+          <p>
+            Select an available bed to create a booking.
+          </p>
+        </div>
+
+        {beds.length === 0 ? (
+          <EmptyState
+            icon={<Bed size={28} />}
+            title="No beds found"
+            text="There are currently no beds available for this hospital."
+          />
+        ) : (
+          <div className="beds-grid">
+            {beds.map((bed) => {
+              const available =
+                bed.status === "available";
+
+              return (
+                <div
+                  key={bed._id}
+                  className="bed-card"
+                >
+                  <div className="bed-card-icon">
+                    <Bed size={23} />
+                  </div>
+
+                  <div>
+                    <span className="section-kicker">
+                      BED
+                    </span>
+
+                    <h3>
+                      {bed.bedNumber ||
+                        bed.number ||
+                        bed._id}
+                    </h3>
+                  </div>
+
+                  <span
+                    className={`bed-status ${
+                      available
+                        ? "available"
+                        : "occupied"
+                    }`}
+                  >
+                    {bed.status}
+                  </span>
+
+                  {available && (
+                    <button
+                      className="btn btn-primary"
+                      disabled={bookingLoading}
+                      onClick={() => bookBed(bed)}
+                    >
+                      {bookingLoading
+                        ? "Booking..."
+                        : "Book bed"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -1293,41 +1120,279 @@ function PatientDashboard() {
   );
 }
 
-/* =========================
-   BOOKINGS
-========================= */
+/* =========================================================
+   PATIENT DASHBOARD
+========================================================= */
 
-function MyBookings() {
-  const [bookings, setBookings] = useState([]);
+function PatientDashboard() {
+  const navigate = useNavigate();
+
+  const [dashboard, setDashboard] =
+    useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  /*
+    IMPORTANT:
+    Backend route is:
+
+    GET /api/v1/patient/dashboard
+
+    Therefore frontend MUST use:
+
+    /patient/dashboard
+  */
+
+  const loadDashboard = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await API.get(
+        "/patient/dashboard",
+        {
+          headers: authHeaders(),
+        }
+      );
+
+      setDashboard(
+        response.data?.dashboard ||
+          response.data ||
+          null
+      );
+    } catch (err) {
+      if (err.response?.status === 401) {
+        logoutUser();
+        navigate("/login");
+        return;
+      }
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to load dashboard."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    loadBookings();
+    loadDashboard();
   }, []);
+
+  return (
+    <main className="page">
+      <div className="container">
+        <div className="page-header">
+          <div>
+            <span className="section-kicker">
+              PATIENT AREA
+            </span>
+
+            <h1>Dashboard</h1>
+
+            <p>
+              Manage your healthcare activity from one
+              place.
+            </p>
+          </div>
+        </div>
+
+        {loading && (
+          <LoadingState text="Loading dashboard..." />
+        )}
+
+        {!loading && error && (
+          <ErrorState
+            message={error}
+            onRetry={loadDashboard}
+          />
+        )}
+
+        {!loading && !error && dashboard && (
+          <div className="dashboard-grid">
+            <div className="dashboard-main-card">
+              <div className="dashboard-card-header">
+                <div>
+                  <span className="section-kicker">
+                    ACTIVE BOOKING
+                  </span>
+
+                  <h2>Your current booking</h2>
+                </div>
+
+                <span className="status-badge">
+                  <span />
+                  Active
+                </span>
+              </div>
+
+              <div className="dashboard-booking">
+                <div className="dashboard-hospital-icon">
+                  <Hospital size={28} />
+                </div>
+
+                <div className="dashboard-booking-info">
+                  <h3>
+                    {dashboard.hospital?.name ||
+                      "Hospital"}
+                  </h3>
+
+                  <div>
+                    <User size={16} />
+
+                    {dashboard.patient?.name ||
+                      getStoredUser()?.name}
+                  </div>
+
+                  <div>
+                    <Clock3 size={16} />
+                    Booking confirmed
+                  </div>
+                </div>
+              </div>
+
+              <div className="dashboard-actions">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    navigate("/patient/bookings")
+                  }
+                >
+                  View all bookings
+                </button>
+
+                <button
+                  className="btn btn-primary"
+                  onClick={() =>
+                    navigate("/hospitals")
+                  }
+                >
+                  Find another hospital
+                </button>
+              </div>
+            </div>
+
+            <div className="dashboard-side-card">
+              <div className="dashboard-side-icon">
+                <User size={21} />
+              </div>
+
+              <span className="section-kicker">
+                PATIENT PROFILE
+              </span>
+
+              <h3>
+                {dashboard.patient?.name ||
+                  getStoredUser()?.name}
+              </h3>
+
+              <p>
+                {dashboard.patient?.email ||
+                  getStoredUser()?.email}
+              </p>
+
+              <div className="profile-divider" />
+
+              <div className="profile-item">
+                <ShieldCheck size={17} />
+                <span>Account protected</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!loading &&
+          !error &&
+          !dashboard && (
+            <div className="no-booking-card">
+              <div className="empty-icon">
+                <CalendarCheck size={28} />
+              </div>
+
+              <span className="section-kicker">
+                NO ACTIVE BOOKING
+              </span>
+
+              <h2>
+                You don't have an active booking.
+              </h2>
+
+              <p>
+                Explore hospitals and find an available
+                bed when you need one.
+              </p>
+
+              <button
+                className="btn btn-primary"
+                onClick={() =>
+                  navigate("/hospitals")
+                }
+              >
+                Explore Hospitals
+                <ArrowRight size={17} />
+              </button>
+            </div>
+          )}
+      </div>
+    </main>
+  );
+}
+
+/* =========================================================
+   MY BOOKINGS
+========================================================= */
+
+function MyBookings() {
+  const [bookings, setBookings] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
 
   const loadBookings = async () => {
     try {
       setLoading(true);
+      setError("");
 
-      const response = await API.get("/Book", {
-        headers: authHeaders(),
-      });
+      /*
+        CURRENT BACKEND:
+        GET /api/v1/BOOK
+      */
 
-      const data = Array.isArray(response.data)
+      const response = await API.get(
+        "/BOOK",
+        {
+          headers: authHeaders(),
+        }
+      );
+
+      const data = Array.isArray(
+        response.data
+      )
         ? response.data
         : response.data.bookings || [];
 
       const user = getStoredUser();
 
-      const patientBookings = data.filter((booking) => {
-        const patientId =
-          typeof booking.patient === "object"
-            ? booking.patient?._id
-            : booking.patient;
+      const patientBookings = data.filter(
+        (booking) => {
+          const patientId =
+            typeof booking.patient ===
+            "object"
+              ? booking.patient?._id
+              : booking.patient;
 
-        return patientId === user?.id;
-      });
+          return (
+            patientId === user?.id ||
+            patientId === user?._id
+          );
+        }
+      );
 
       setBookings(patientBookings);
     } catch (err) {
@@ -1340,53 +1405,88 @@ function MyBookings() {
     }
   };
 
+  useEffect(() => {
+    loadBookings();
+  }, []);
+
   return (
     <main className="page">
       <div className="container">
         <div className="page-header">
           <div>
-            <span className="section-kicker">PATIENT AREA</span>
+            <span className="section-kicker">
+              PATIENT AREA
+            </span>
+
             <h1>My bookings</h1>
-            <p>View and manage your healthcare bookings.</p>
+
+            <p>
+              View and manage your healthcare
+              bookings.
+            </p>
           </div>
         </div>
 
-        {loading && <LoadingState text="Loading bookings..." />}
-
-        {!loading && error && (
-          <ErrorState message={error} onRetry={loadBookings} />
+        {loading && (
+          <LoadingState text="Loading bookings..." />
         )}
 
-        {!loading && !error && bookings.length === 0 && (
-          <EmptyState
-            icon={<CalendarCheck size={28} />}
-            title="No bookings yet"
-            text="You haven't created any hospital bookings."
+        {!loading && error && (
+          <ErrorState
+            message={error}
+            onRetry={loadBookings}
           />
         )}
 
-        {!loading && !error && bookings.length > 0 && (
-          <div className="bookings-list">
-            {bookings.map((booking) => (
-              <BookingCard
-                key={booking._id}
-                booking={booking}
-                onRefresh={loadBookings}
-              />
-            ))}
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          bookings.length === 0 && (
+            <EmptyState
+              icon={<CalendarCheck size={28} />}
+              title="No bookings yet"
+              text="You haven't created any hospital bookings."
+            />
+          )}
+
+        {!loading &&
+          !error &&
+          bookings.length > 0 && (
+            <div className="bookings-list">
+              {bookings.map((booking) => (
+                <BookingCard
+                  key={booking._id}
+                  booking={booking}
+                  onRefresh={loadBookings}
+                />
+              ))}
+            </div>
+          )}
       </div>
     </main>
   );
 }
 
-function BookingCard({ booking, onRefresh }) {
-  const [loading, setLoading] = useState(false);
+/* =========================================================
+   BOOKING CARD
+========================================================= */
 
-  const updateBooking = async (status) => {
+function BookingCard({
+  booking,
+  onRefresh,
+}) {
+  const [loading, setLoading] =
+    useState(false);
+
+  const updateBooking = async (
+    status
+  ) => {
     try {
       setLoading(true);
+
+      /*
+        CURRENT BACKEND:
+        PUT /api/v1/Book/:id
+      */
 
       await API.put(
         `/Book/${booking._id}`,
@@ -1396,7 +1496,7 @@ function BookingCard({ booking, onRefresh }) {
         }
       );
 
-      onRefresh();
+      await onRefresh();
     } catch (error) {
       alert(
         error.response?.data?.message ||
@@ -1408,13 +1508,16 @@ function BookingCard({ booking, onRefresh }) {
   };
 
   const hospitalName =
-    typeof booking.hospital === "object"
+    typeof booking.hospital ===
+    "object"
       ? booking.hospital?.name
       : "Hospital";
 
   const bedNumber =
-    typeof booking.bed === "object"
-      ? booking.bed?.bedNumber
+    typeof booking.bed ===
+    "object"
+      ? booking.bed?.bedNumber ||
+        booking.bed?.number
       : "Bed";
 
   return (
@@ -1424,7 +1527,9 @@ function BookingCard({ booking, onRefresh }) {
       </div>
 
       <div className="booking-card-info">
-        <span className="section-kicker">BOOKING</span>
+        <span className="section-kicker">
+          BOOKING
+        </span>
 
         <h3>{hospitalName}</h3>
 
@@ -1442,7 +1547,9 @@ function BookingCard({ booking, onRefresh }) {
       </div>
 
       <div className="booking-card-actions">
-        <span className={`booking-status ${booking.status}`}>
+        <span
+          className={`booking-status ${booking.status}`}
+        >
           {booking.status}
         </span>
 
@@ -1450,9 +1557,13 @@ function BookingCard({ booking, onRefresh }) {
           <button
             className="btn btn-danger-outline"
             disabled={loading}
-            onClick={() => updateBooking("cancelled")}
+            onClick={() =>
+              updateBooking("cancelled")
+            }
           >
-            {loading ? "Updating..." : "Cancel booking"}
+            {loading
+              ? "Updating..."
+              : "Cancel booking"}
           </button>
         )}
       </div>
@@ -1460,20 +1571,24 @@ function BookingCard({ booking, onRefresh }) {
   );
 }
 
-/* =========================
+/* =========================================================
    STATES
-========================= */
+========================================================= */
 
 function LoadingState({ text }) {
   return (
     <div className="state-card">
       <div className="loading-spinner" />
+
       <h3>{text}</h3>
     </div>
   );
 }
 
-function ErrorState({ message, onRetry }) {
+function ErrorState({
+  message,
+  onRetry,
+}) {
   return (
     <div className="state-card error-state">
       <div className="empty-icon error">
@@ -1481,10 +1596,14 @@ function ErrorState({ message, onRetry }) {
       </div>
 
       <h3>Something went wrong</h3>
+
       <p>{message}</p>
 
       {onRetry && (
-        <button className="btn btn-primary" onClick={onRetry}>
+        <button
+          className="btn btn-primary"
+          onClick={onRetry}
+        >
           Try again
         </button>
       )}
@@ -1492,57 +1611,83 @@ function ErrorState({ message, onRetry }) {
   );
 }
 
-function EmptyState({ icon, title, text }) {
+function EmptyState({
+  icon,
+  title,
+  text,
+}) {
   return (
     <div className="state-card">
-      <div className="empty-icon">{icon}</div>
+      <div className="empty-icon">
+        {icon}
+      </div>
+
       <h3>{title}</h3>
+
       <p>{text}</p>
     </div>
   );
 }
 
-/* =========================
+/* =========================================================
    FOOTER
-========================= */
+========================================================= */
 
 function Footer() {
   return (
     <footer className="footer">
       <div className="container footer-inner">
         <div>
-          <Link to="/" className="footer-brand">
+          <Link
+            to="/"
+            className="footer-brand"
+          >
             <span className="brand-mark">
               <HeartPulse size={18} />
             </span>
+
             SwasthSewa
           </Link>
 
           <p>
-            A simpler way to discover hospitals and manage
-            healthcare bookings.
+            A simpler way to discover hospitals and
+            manage healthcare bookings.
           </p>
         </div>
 
         <div className="footer-links">
           <Link to="/">Home</Link>
-          <Link to="/hospitals">Hospitals</Link>
-          <Link to="/login">Login</Link>
-          <Link to="/signup">Sign up</Link>
+
+          <Link to="/hospitals">
+            Hospitals
+          </Link>
+
+          <Link to="/login">
+            Login
+          </Link>
+
+          <Link to="/signup">
+            Sign up
+          </Link>
         </div>
 
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} SwasthSewa</span>
-          <span>Healthcare management platform</span>
+          <span>
+            © {new Date().getFullYear()} SwasthSewa
+          </span>
+
+          <span>
+            Healthcare management platform
+          </span>
         </div>
       </div>
     </footer>
   );
 }
 
-/* =========================
+/* =========================================================
    APP
-========================= */
+========================================================= */
 
 function App() {
   return (
@@ -1551,11 +1696,20 @@ function App() {
         <Navbar />
 
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={<Home />}
+          />
 
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
 
-          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/signup"
+            element={<Signup />}
+          />
 
           <Route
             path="/hospitals"
@@ -1589,7 +1743,15 @@ function App() {
             }
           />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to="/"
+                replace
+              />
+            }
+          />
         </Routes>
 
         <Footer />
