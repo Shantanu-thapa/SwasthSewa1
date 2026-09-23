@@ -1,5 +1,5 @@
 const Hospital = require("./model/hospital");
-const Bed = require("./model/bedModel")
+const Bed = require("./model/bedModel");
 
 const hospitals = [
   {
@@ -42,40 +42,54 @@ const hospitals = [
 const autoSeed = async () => {
   try {
     const hospitalCount = await Hospital.countDocuments();
+    const bedCount = await Bed.countDocuments();
 
-    // Database already has hospitals
-    if (hospitalCount > 0) {
-      console.log("Hospital data already exists. Skipping seed.");
+    console.log(`Hospitals in DB: ${hospitalCount}`);
+    console.log(`Beds in DB: ${bedCount}`);
+
+    // If both already exist, don't seed again
+    if (hospitalCount > 0 && bedCount > 0) {
+      console.log("Hospital and bed data already exists. Skipping seed.");
       return;
     }
 
-    // Create hospitals
-    const createdHospitals = await Hospital.insertMany(hospitals);
+    let createdHospitals = await Hospital.find();
 
-    console.log(`${createdHospitals.length} hospitals seeded.`);
-
-    // Create beds for each hospital
-    const beds = [];
-
-    for (const hospital of createdHospitals) {
-      for (let i = 1; i <= hospital.totalBeds; i++) {
-        beds.push({
-          hospital: hospital._id,
-          bedNumber: `${hospital._id.toString().slice(-4)}-${i}`,
-          status:
-            i <= hospital.availableBeds
-              ? "available"
-              : "occupied",
-        });
-      }
+    // Create hospitals only if they don't exist
+    if (hospitalCount === 0) {
+      createdHospitals = await Hospital.insertMany(hospitals);
+      console.log(`${createdHospitals.length} hospitals seeded.`);
+    } else {
+      console.log("Hospitals already exist.");
     }
 
-    await Bed.insertMany(beds);
+    // Create beds only if they don't exist
+    if (bedCount === 0) {
+      const beds = [];
 
-    console.log(`${beds.length} beds seeded.`);
+      for (const hospital of createdHospitals) {
+        for (let i = 1; i <= hospital.totalBeds; i++) {
+          beds.push({
+            hospital: hospital._id,
+            bedNumber: `${hospital._id.toString().slice(-4)}-${i}`,
+            status:
+              i <= hospital.availableBeds
+                ? "available"
+                : "occupied",
+          });
+        }
+      }
+
+      await Bed.insertMany(beds);
+
+      console.log(`${beds.length} beds seeded.`);
+    } else {
+      console.log("Beds already exist.");
+    }
+
     console.log("Auto-seeding completed successfully.");
   } catch (error) {
-    console.error("Auto-seeding failed:", error.message);
+    console.error("Auto-seeding failed:", error);
   }
 };
 
